@@ -26,11 +26,11 @@ class IndividualTaskActivity : AppCompatActivity() {
     private val KEY_TASKS_LIST = "elements_list"
 
     private val elementList = mutableListOf<String>()
+    private val addElementList = mutableListOf<String>()
     private var doesFileExist = false
 
     var onSave:((file: Uri) -> Unit)? = null
 
-    private var map = mutableMapOf<Long?,String>()
     private val adapter by lazy { makeAdapter(elementList) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,11 +63,8 @@ class IndividualTaskActivity : AppCompatActivity() {
 
                 val task = data?.getStringExtra(EXTRA_TASK_DESCRIPTION)
                 task?.let {
-
-                    val taskId = intent.extras?.getLong("TASK_ID")
-                    map[taskId] = task
-                    sortMapValues()
-
+                    addElementList.add(task)
+                    elementList.add(task)
                     adapter.notifyDataSetChanged()
                 }
             }
@@ -84,37 +81,18 @@ class IndividualTaskActivity : AppCompatActivity() {
 
 
     fun doneAddingElementClicked(view: View) {
-
-        val savedList = mutableListOf<String>()
-        for (map in map.values) {
-            savedList.add(map)
-        }
-
-
         val taskId = intent.extras?.getLong("TASK_ID")
         val filename = "ElementMap.$taskId"
         val path = this.getExternalFilesDir(null)
         println(path.toString())
-
-        createFile(path.toString(), filename, savedList)
-
+        createFile(path.toString(), filename, addElementList)
         finish()
 
-
     }
-
-    private fun sortMapValues() {
-        val taskId = intent.extras?.getLong("TASK_ID")
-        for (key in map.keys)
-            if(key == taskId)
-                map[key]?.let { it1 -> elementList.add(it1) }
-    }
-
 
     private fun createFile(path:String, fileName:String, savedList:MutableList<String> ){
         val file = File(path,fileName)
         FileOutputStream(file, true).bufferedWriter().use { writer ->
-            // bufferdWriter lever her
             savedList.forEach{
                 writer.write("${it.toString()}\n")
             }
@@ -127,9 +105,7 @@ class IndividualTaskActivity : AppCompatActivity() {
     private fun checkIfFileExists(directoryFile:String, newFilePath:String) {
         if (directoryFile == newFilePath) {
             doesFileExist = true
-
         }
-
     }
 
     private fun addFileContentToList(filePath: String) {
