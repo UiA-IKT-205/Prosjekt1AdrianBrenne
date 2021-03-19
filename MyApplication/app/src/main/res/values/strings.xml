@@ -7,5 +7,7 @@
     <string name="cancel">Cancel</string>
     <string name="add_a_task">Add a task</string>
     <string name="add_an_element">Add an element</string>
+    <string name="view_elements">View task</string>
+    <string name="taskListButton">Delete</string>
 
 </resources>

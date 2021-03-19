@@ -133,10 +133,11 @@ class IndividualTaskActivity : AppCompatActivity() {
     }
 
     private fun addFileContentToList(filePath: String) {
-
         FileReader(filePath).forEachLine { elementList.add(it) }
         adapter.notifyDataSetChanged()
 
     }
+
+
 
 }
