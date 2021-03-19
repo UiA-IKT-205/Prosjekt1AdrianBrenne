@@ -14,6 +14,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.util.Log
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -49,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         taskListView.adapter = adapter
+
+
 
         taskListView.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, id ->
@@ -120,13 +123,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (requestCode == ADD_ELEMENT_REQUEST) {
-            if(resultCode == Activity.RESULT_OK){
-                println("hei")
-
-            }
-        }
-
     }
 
 
@@ -151,10 +147,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun taskSelected(position: Int, id: Long) {
+        AlertDialog.Builder(this)
+                .setTitle(R.string.alert_title)
+                .setMessage(taskList[position])
+                .setNeutralButton(R.string.view_elements)
+                {
+                    _,_ ->
+                   viewElements(id)
+                }
+                .setPositiveButton(R.string.delete)
+                { _, _ ->
+                    deleteElementFile(id)
+                    taskList.removeAt(position)
+                    adapter.notifyDataSetChanged()
+                }
+                .setNegativeButton(R.string.cancel)
+                { dialog, _ -> dialog.cancel()
+                }
+
+                .create()
+                .show()
+
+    }
+
+    private fun viewElements(id:Long){
         val intent = Intent(this, IndividualTaskActivity::class.java)
         intent.putExtra("TASK_NAME", taskList[id.toInt()])
         intent.putExtra("TASK_ID",id)
         startActivityForResult(intent, ADD_ELEMENT_REQUEST)
+    }
+
+    private fun deleteElementFile(id:Long){
+        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$id"
+        File(filePath).delete()
+
     }
 
 
