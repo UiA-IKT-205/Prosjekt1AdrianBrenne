@@ -18,11 +18,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
+
 class MainActivity : AppCompatActivity() {
     private val taskList = mutableListOf<String>()
     private val adapter by lazy { makeAdapter(taskList) }
 
     private val ADD_TASK_REQUEST = 1
+    private val ADD_ELEMENT_REQUEST = 2
 
     private val tickReceiver by lazy { makeBroadcastReceiver() }
 
@@ -49,8 +51,8 @@ class MainActivity : AppCompatActivity() {
         taskListView.adapter = adapter
 
         taskListView.onItemClickListener =
-            AdapterView.OnItemClickListener { _, _, position, _ ->
-                taskSelected(position)
+            AdapterView.OnItemClickListener { _, _, position, id ->
+                taskSelected(position,id)
             }
 
         // Leser den lagrede listen fra SharedPreferences
@@ -117,6 +119,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        if (requestCode == ADD_ELEMENT_REQUEST) {
+            if(resultCode == Activity.RESULT_OK){
+                println("hei")
+
+            }
+        }
+
     }
 
 
@@ -140,22 +150,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun taskSelected(position: Int) {
-        // endre
-        AlertDialog.Builder(this)
-            .setTitle(R.string.alert_title)
-            .setMessage(taskList[position])
-
-            .setPositiveButton(R.string.delete)
-            { _, _ ->
-                taskList.removeAt(position)
-                adapter.notifyDataSetChanged()
-            }
-            .setNegativeButton(R.string.cancel)
-            { dialog, _ -> dialog.cancel()
-            }
-            .create()
-            .show()
+    private fun taskSelected(position: Int, id: Long) {
+        val intent = Intent(this, IndividualTaskActivity::class.java)
+        intent.putExtra("TASK_NAME", taskList[id.toInt()])
+        intent.putExtra("TASK_ID",id)
+        startActivityForResult(intent, ADD_ELEMENT_REQUEST)
     }
 
 

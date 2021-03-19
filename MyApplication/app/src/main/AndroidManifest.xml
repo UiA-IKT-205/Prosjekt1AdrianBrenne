@@ -9,8 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-        <activity android:name=".TaskDescriptionActivity"></activity>
-        <activity android:name=".MainActivity"
+        <activity android:name=".IndividualTaskActivity" />
+        <activity android:name=".TaskDescriptionActivity" />
+        <activity
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
