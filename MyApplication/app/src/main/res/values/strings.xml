@@ -2,7 +2,8 @@
     <string name="app_name">Huskeliste</string>
     <string name="description">Description</string>
     <string name="done">Done</string>
-    <string name="alert_title">Task</string>
+    <string name="alert_task_title">Task</string>
+    <string name="alert_element_title">Element</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="add_a_task">Add a task</string>

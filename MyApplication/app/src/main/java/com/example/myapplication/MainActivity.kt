@@ -148,7 +148,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun taskSelected(position: Int, id: Long) {
         AlertDialog.Builder(this)
-                .setTitle(R.string.alert_title)
+                .setTitle(R.string.alert_task_title)
                 .setMessage(taskList[position])
                 .setNeutralButton(R.string.view_elements)
                 {
