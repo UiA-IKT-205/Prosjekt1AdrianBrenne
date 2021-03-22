@@ -15,6 +15,8 @@ import android.content.IntentFilter
 import android.content.res.Configuration
 import android.util.Log
 import java.io.File
+import java.io.FileOutputStream
+import java.io.FileReader
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,90 +24,31 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private val taskList = mutableListOf<String>()
+    private val taskMap = mutableMapOf<Int,String>()
+    private var keyList = mutableSetOf<String>()
+    private var valueList = mutableSetOf<String>()
     private val adapter by lazy { makeAdapter(taskList) }
+    private var doesFileExist = false
+    private var task_id = 0
 
     private val ADD_TASK_REQUEST = 1
     private val ADD_ELEMENT_REQUEST = 2
-
-    private val tickReceiver by lazy { makeBroadcastReceiver() }
-
-    private val PREFS_TASKS = "prefs_tasks"
-    private val KEY_TASKS_LIST = "tasks_list"
-
-
-
-    companion object {
-        private const val LOG_TAG = "MainActivityLog"
-
-        private fun getCurrentTimeStamp(): String {
-            val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
-            val now = Date()
-            return simpleDateFormat.format(now)
-        }
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         taskListView.adapter = adapter
-
-
+        println(taskMap)
+        createMapOnStartup()
+        loadElements()
 
         taskListView.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, id ->
                 taskSelected(position,id)
             }
 
-        // Leser den lagrede listen fra SharedPreferences
-        // Henter dataene ved å konvertere til en typed array
-        val savedList = getSharedPreferences(PREFS_TASKS, Context.MODE_PRIVATE).getString(KEY_TASKS_LIST, null)
-        if (savedList != null) {
-            val items = savedList.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            taskList.addAll(items)
-        }
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        // Registrerer broadcast receiveren, og oppdaterer den hvert minutt.
-        dateTimeTextView.text = getCurrentTimeStamp()
-        registerReceiver(tickReceiver, IntentFilter(Intent.ACTION_TIME_TICK))
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        // Skrur av broadcast receiveren når activityen er på pause
-        // Ekstra sjekk om den er registrert fra før av
-        try {
-            unregisterReceiver(tickReceiver)
-        } catch (e: IllegalArgumentException) {
-            Log.e(MainActivity.LOG_TAG, "Time tick Receiver not registered", e)
-        }
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        // Bygger en komma separert string med alle taskene i listen
-        // Lagres i SharedPreferences
-        val savedList = StringBuilder()
-        for (task in taskList) {
-            savedList.append(task)
-            savedList.append(",")
-        }
-
-        getSharedPreferences(PREFS_TASKS, Context.MODE_PRIVATE).edit()
-            .putString(KEY_TASKS_LIST, savedList.toString()).apply()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
     }
 
 
@@ -117,12 +60,21 @@ class MainActivity : AppCompatActivity() {
 
                 val task = data?.getStringExtra(TaskDescriptionActivity.EXTRA_TASK_DESCRIPTION)
                 task?.let {
+                    saveTaskId()
+                    taskMap[task_id] = task
                     taskList.add(task)
+                    createFile()
+                    saveMap(task_id, task)
                     adapter.notifyDataSetChanged()
                 }
             }
         }
 
+    }
+
+    fun saveTaskId(){
+        task_id += 1
+        getSharedPreferences("my_save", Activity.MODE_PRIVATE).edit().putInt("task_id", task_id).apply()
     }
 
 
@@ -136,16 +88,6 @@ class MainActivity : AppCompatActivity() {
         ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
 
 
-    private fun makeBroadcastReceiver(): BroadcastReceiver {
-        return object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent?) {
-                if (intent?.action == Intent.ACTION_TIME_TICK) {
-                    dateTimeTextView.text = getCurrentTimeStamp()
-                }
-            }
-        }
-    }
-
     private fun taskSelected(position: Int, id: Long) {
         AlertDialog.Builder(this)
                 .setTitle(R.string.alert_task_title)
@@ -158,7 +100,11 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton(R.string.delete)
                 { _, _ ->
                     deleteElementFile(id)
+                    val taskId = getTaskid(taskList[id.toInt()])
+                    saveNewListAfterDeletion(taskId, position)
                     taskList.removeAt(position)
+                    createFile()
+                    taskMap.remove(taskId)
                     adapter.notifyDataSetChanged()
                 }
                 .setNegativeButton(R.string.cancel)
@@ -171,19 +117,103 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun viewElements(id:Long){
+        val taskId = getTaskid(taskList[id.toInt()])
+
         val intent = Intent(this, IndividualTaskActivity::class.java)
         intent.putExtra("TASK_NAME", taskList[id.toInt()])
-        intent.putExtra("TASK_ID",id)
+        intent.putExtra("TASK_ID",taskId.toLong())
         startActivityForResult(intent, ADD_ELEMENT_REQUEST)
     }
 
     private fun deleteElementFile(id:Long){
-        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$id"
+        val taskId = getTaskid(taskList[id.toInt()])
+        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$taskId"
         File(filePath).delete()
 
     }
 
+    private fun createFile(){
+        val path = this.getExternalFilesDir(null)
+        val fileName = "TaskList"
+        val file = File(path,fileName)
+
+        FileOutputStream(file, false).bufferedWriter().use { writer ->
+            taskList.forEach{
+                writer.write("${it.toString()}\n")
+            }
+
+        }
+    }
+
+    private fun getTaskid(taskName:String): Int {
+        val taskId = taskMap.filterValues { it == taskName }.keys.first()
+
+        return taskId
+
+    }
+
+    private fun loadElements(){
+        val path = this.getExternalFilesDir(null)
+        val fullFilePath = path.toString() + "/TaskList"
+
+        File(path.toString()).walk().forEach {directoryFile ->
+            checkIfFileExists(directoryFile.toString(),fullFilePath)
+        }
+
+        if(doesFileExist)
+            addFileContentToList(fullFilePath)
+    }
+
+    private fun checkIfFileExists(directoryFile:String, newFilePath:String) {
+        if (directoryFile == newFilePath) {
+            doesFileExist = true
+        }
+    }
+
+    private fun addFileContentToList(filePath: String) {
+        FileReader(filePath).forEachLine { taskList.add(it) }
+
+        adapter.notifyDataSetChanged()
+
+    }
+
+    private fun saveMap(taskid:Int, task:String){
+        keyList.add(taskid.toString())
+        valueList.add(task)
+        deleteThenAddToSharedPreferences()
+    }
+
+    private fun createMapOnStartup(){
+        task_id = getSharedPreferences("my_save",Activity.MODE_PRIVATE).getInt("task_id",0)
+        keyList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("key_list",keyList) as MutableSet<String>
+        valueList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("value_list",valueList) as MutableSet<String>
+
+        //Fyller mappet med begge listene
+        keyList.zip(valueList).forEach {
+            taskMap[it.first.toInt()] = it.second
+        }
+
+        println(taskMap)
+    }
+
+    private fun saveNewListAfterDeletion(taskid: Int, position: Int){
+        keyList.remove("$taskid")
+        valueList.remove(taskList[position])
+        deleteThenAddToSharedPreferences()
+    }
+
+    private fun deleteThenAddToSharedPreferences() {
+        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("key_list").apply()
+        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("value_list").apply()
+
+        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",keyList).apply()
+        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("value_list",valueList).apply()
+
+    }
 
 }
+
+
+
 
 
