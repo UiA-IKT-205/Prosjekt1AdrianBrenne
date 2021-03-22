@@ -83,7 +83,6 @@ class IndividualTaskActivity : AppCompatActivity() {
         val path = this.getExternalFilesDir(null)
         createFile(path.toString(), filename, addElementList)
         finish()
-
     }
 
     private fun createFile(path:String, fileName:String, savedList:MutableList<String> ){
