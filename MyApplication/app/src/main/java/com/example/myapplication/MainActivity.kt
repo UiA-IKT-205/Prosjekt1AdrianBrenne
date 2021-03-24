@@ -47,10 +47,7 @@ class MainActivity : AppCompatActivity() {
             AdapterView.OnItemClickListener { _, _, position, id ->
                 taskSelected(position,id)
             }
-
-
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -141,8 +138,8 @@ class MainActivity : AppCompatActivity() {
             taskList.forEach{
                 writer.write("${it.toString()}\n")
             }
-
         }
+        runFirebaseActivity(file)
     }
 
     private fun getTaskid(taskName:String): Int {
@@ -208,6 +205,15 @@ class MainActivity : AppCompatActivity() {
 
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",keyList).apply()
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("value_list",valueList).apply()
+
+    }
+
+    private fun runFirebaseActivity(file:File){
+        val intent = Intent(this, FirebaseUploadActivity::class.java).apply {
+            putExtra("taskfile",file)
+        }
+        startActivity(intent)
+
 
     }
 

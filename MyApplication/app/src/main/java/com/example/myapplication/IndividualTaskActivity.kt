@@ -2,27 +2,19 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import com.example.myapplication.TaskDescriptionActivity.Companion.EXTRA_TASK_DESCRIPTION
 import kotlinx.android.synthetic.main.activity_individual_task.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
-import java.io.FileWriter
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.util.*
 
 class IndividualTaskActivity : AppCompatActivity() {
 
@@ -82,6 +74,7 @@ class IndividualTaskActivity : AppCompatActivity() {
         val filename = "ElementMap.$taskId"
         val path = this.getExternalFilesDir(null)
         createFile(path.toString(), filename, addElementList)
+
         finish()
     }
 
@@ -93,7 +86,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-
+        runFirebaseActivity(file)
         this.onSave?.invoke(file.toUri())
     }
 
@@ -158,7 +151,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-
+        runFirebaseActivity(File(fullFilePath))
         this.onSave?.invoke(fullFilePath.toUri())
     }
 
@@ -169,6 +162,15 @@ class IndividualTaskActivity : AppCompatActivity() {
         val fullFilePath = path.toString() + "/$filename"
 
         return fullFilePath
+    }
+
+    private fun runFirebaseActivity(file:File){
+        val intent = Intent(this, FirebaseUploadActivity::class.java).apply {
+            putExtra("elementfile",file)
+        }
+        startActivity(intent)
+
+
     }
 
 
