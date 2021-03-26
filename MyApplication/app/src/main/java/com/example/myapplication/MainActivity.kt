@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                 writer.write("${it.toString()}\n")
             }
         }
-        runFirebaseActivity(file)
+        //runFirebaseActivity(file)
     }
 
     private fun getTaskid(taskName:String): Int {
