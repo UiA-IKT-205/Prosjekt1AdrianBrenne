@@ -13,13 +13,17 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.provider.ContactsContract
 import android.util.Log
+import android.widget.ListView
+import kotlinx.android.synthetic.main.tasklist_row_item.*
+import org.xml.sax.DTDHandler
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
 import java.text.SimpleDateFormat
 import java.util.*
-
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,21 +31,33 @@ class MainActivity : AppCompatActivity() {
     private val taskMap = mutableMapOf<Int,String>()
     private var keyList = mutableSetOf<String>()
     private var valueList = mutableSetOf<String>()
-    private val adapter by lazy { makeAdapter(taskList) }
+    //private val adapter by lazy { makeAdapter(taskList) }
     private var doesFileExist = false
     private var task_id = 0
 
     private val ADD_TASK_REQUEST = 1
     private val ADD_ELEMENT_REQUEST = 2
 
+    private lateinit var taskListView: ListView
+    private var dataModel: ArrayList<TaskViewModel>? = null
+    private lateinit var adapter: TaskListViewAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        taskListView = findViewById<View>(R.id.taskListView) as ListView
+
+        dataModel = ArrayList()
+
+        adapter = TaskListViewAdapter(dataModel!!,applicationContext)
+
         taskListView.adapter = adapter
-        println(taskMap)
-        createMapOnStartup()
         loadElements()
+        createMapOnStartup()
+
+        loadProgressBar()
 
         taskListView.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, id ->
@@ -51,6 +67,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
         if (requestCode == ADD_TASK_REQUEST) {
 
             if (resultCode == Activity.RESULT_OK) {
@@ -60,12 +77,23 @@ class MainActivity : AppCompatActivity() {
                     saveTaskId()
                     taskMap[task_id] = task
                     taskList.add(task)
+                    dataModel!!.add(TaskViewModel(task,0))
                     createFile()
                     saveMap(task_id, task)
                     adapter.notifyDataSetChanged()
+                    println(taskMap)
                 }
             }
+
         }
+
+        if (requestCode == ADD_ELEMENT_REQUEST){
+            if (resultCode == Activity.RESULT_OK){
+                finish()
+                startActivity(intent)
+            }
+        }
+
 
     }
 
@@ -169,6 +197,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun addFileContentToList(filePath: String) {
         FileReader(filePath).forEachLine { taskList.add(it) }
+        FileReader(filePath).forEachLine { valueList.add(it) }
 
         adapter.notifyDataSetChanged()
 
@@ -177,13 +206,21 @@ class MainActivity : AppCompatActivity() {
     private fun saveMap(taskid:Int, task:String){
         keyList.add(taskid.toString())
         valueList.add(task)
+        println(valueList)
         deleteThenAddToSharedPreferences()
     }
 
     private fun createMapOnStartup(){
+
+        //getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("key_list").apply()
+
+
         task_id = getSharedPreferences("my_save",Activity.MODE_PRIVATE).getInt("task_id",0)
         keyList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("key_list",keyList) as MutableSet<String>
-        valueList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("value_list",valueList) as MutableSet<String>
+        //valueList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("value_list",valueList) as MutableSet<String>
+
+        //println(keyList)
+        //println(valueList)
 
         //Fyller mappet med begge listene
         keyList.zip(valueList).forEach {
@@ -201,10 +238,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun deleteThenAddToSharedPreferences() {
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("key_list").apply()
-        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("value_list").apply()
+        //getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("value_list").apply()
 
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",keyList).apply()
-        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("value_list",valueList).apply()
+        //getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("value_list",valueList).apply()
+
+        //println(getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("value_list",valueList) as MutableSet<String>)
 
     }
 
@@ -214,6 +253,35 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(intent)
 
+
+    }
+
+    private fun loadProgressBar(){
+        var n = 0
+        val path = this.getExternalFilesDir(null)
+        println(taskMap)
+
+        for (id in taskMap.keys){
+            var numberOfCheckedBoxes = 0
+            var progress = 0
+            var numberOfElements = 0
+            val filename = "CheckListMap.$id"
+            val checkListFullPath = path.toString() + "/$filename"
+            FileReader(checkListFullPath).forEachLine {
+                if (it == "true")
+                    numberOfCheckedBoxes += 1
+                numberOfElements += 1
+            }
+
+            println(numberOfCheckedBoxes)
+            progress = (100 / numberOfElements) * numberOfCheckedBoxes
+            println(progress)
+            dataModel!!.add(TaskViewModel(taskList[n],progress))
+
+            n += 1
+
+        }
+        adapter.notifyDataSetChanged()
 
     }
 
