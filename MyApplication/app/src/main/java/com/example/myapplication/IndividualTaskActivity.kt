@@ -78,6 +78,7 @@ class IndividualTaskActivity : AppCompatActivity() {
                     elementList.add(task)
                     elementsCheckedList.add("false")
                     dataModel!!.add(DataModel(task,false))
+                    createCheckListFile()
                     updateProgressBarAfterAdd()
                     adapter.notifyDataSetChanged()
                 }
@@ -100,6 +101,8 @@ class IndividualTaskActivity : AppCompatActivity() {
         val path = this.getExternalFilesDir(null)
         createFile(path.toString(), filename, addElementList)
 
+        val result = Intent()
+        setResult(Activity.RESULT_OK, result)
         finish()
     }
 
@@ -163,7 +166,10 @@ class IndividualTaskActivity : AppCompatActivity() {
             addElementFileContentToList(fullFilePath)
 
         if(doesCheckListFileExist){
+            println("Hei")
             addCheckListFileContentToList(checkListFullPath)
+            println(elementList)
+            println(elementsCheckedList)
             elementList.zip(elementsCheckedList).forEach {
                 dataModel!!.add(DataModel(it.first, it.second.toBoolean()))
                 if (it.second == "true"){
