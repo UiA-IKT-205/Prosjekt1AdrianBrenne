@@ -10,5 +10,6 @@
     <string name="add_an_element">Add an element</string>
     <string name="view_elements">View task</string>
     <string name="taskListButton">Delete</string>
+    <string name="pBarProgressText">Task completed 0% of 100%</string>
 
 </resources>

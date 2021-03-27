@@ -4,8 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context=".IndividualTaskActivity">
+
+    <ProgressBar
+        android:id="@+id/pBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:progress="1"
+        android:max="100"
+        android:minHeight="50dp"
+        android:minWidth="200dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/addElementInTask"
+        />
+
+    <TextView
+        android:id="@+id/pBarProgressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pBarProgressText"
+        app:layout_constraintTop_toBottomOf="@id/pBar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
 
     <Button
         android:id="@+id/addElementInTask"
@@ -23,10 +45,23 @@
         android:id="@+id/elementListView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addElementInTask" />
+        app:layout_constraintTop_toBottomOf="@id/pBarProgressText"
+        app:layout_constraintBottom_toTopOf="@id/doneButton"/>
+
+<!--    <Button-->
+<!--        android:id="@+id/btnProgressBarHorizontal"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:onClick="horizontalDeterminate"-->
+<!--        android:text="DETERMINATE HORIZONTAL PROGRESS BAR"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/doneButton"-->
+<!--        app:layout_constraintLeft_toLeftOf="parent"-->
+<!--        app:layout_constraintRight_toRightOf="parent"-->
+<!--        />-->
 
     <Button
         android:id="@+id/doneButton"

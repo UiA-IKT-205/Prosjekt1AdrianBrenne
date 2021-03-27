@@ -6,12 +6,17 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.provider.ContactsContract
+import android.view.MotionEvent
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.*
 import androidx.core.net.toUri
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.TaskDescriptionActivity.Companion.EXTRA_TASK_DESCRIPTION
 import kotlinx.android.synthetic.main.activity_individual_task.*
+import kotlinx.android.synthetic.main.row_item.*
+import kotlinx.android.synthetic.main.row_item.view.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
@@ -22,24 +27,41 @@ class IndividualTaskActivity : AppCompatActivity() {
 
     private val elementList = mutableListOf<String>()
     private val addElementList = mutableListOf<String>()
-    private var doesFileExist = false
-
+    private val elementsCheckedList = mutableListOf<String>()
+    private var doesElementMapFileExist = false
+    private var doesCheckListFileExist = false
     var onSave:((file: Uri) -> Unit)? = null
 
-    private val adapter by lazy { makeAdapter(elementList) }
+    //private val adapter by lazy { makeAdapter(elementList) }
+
+    private lateinit var elementListView: ListView
+    private var dataModel: ArrayList<DataModel>? = null
+    private lateinit var adapter : ListViewAdapter
+
+    private var progressStatus = 0
+    private var newProgress = 0
+    private var numberOfElementsChecked = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_individual_task)
-        elementListView.adapter = adapter
-
         title = intent.extras?.getString("TASK_NAME")
+
+        elementListView = findViewById<View>(R.id.elementListView) as ListView
+
+        dataModel = ArrayList()
+
+        adapter = ListViewAdapter(dataModel!!, applicationContext)
+
+        elementListView.adapter = adapter
 
         loadElements()
 
-        elementListView.onItemClickListener = AdapterView.OnItemClickListener { _,_, position, id ->
-            elementSelected(position)
-        }
+
+        elementListView.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, position, id ->
+                checkBoxChecked(position)
+            }
 
     }
 
@@ -54,6 +76,10 @@ class IndividualTaskActivity : AppCompatActivity() {
                 task?.let {
                     addElementList.add(task)
                     elementList.add(task)
+                    elementsCheckedList.add("false")
+                    dataModel!!.add(DataModel(task,false))
+                    createCheckListFile()
+                    updateProgressBarAfterAdd()
                     adapter.notifyDataSetChanged()
                 }
             }
@@ -75,6 +101,8 @@ class IndividualTaskActivity : AppCompatActivity() {
         val path = this.getExternalFilesDir(null)
         createFile(path.toString(), filename, addElementList)
 
+        val result = Intent()
+        setResult(Activity.RESULT_OK, result)
         finish()
     }
 
@@ -86,54 +114,104 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-        runFirebaseActivity(file)
+        //runFirebaseActivity(file)
         this.onSave?.invoke(file.toUri())
     }
 
-    private fun checkIfFileExists(directoryFile:String, newFilePath:String) {
+    private fun checkIfElementMapFileExists(directoryFile:String, newFilePath:String) {
         if (directoryFile == newFilePath) {
-            doesFileExist = true
+            doesElementMapFileExist = true
         }
     }
 
-    private fun addFileContentToList(filePath: String) {
+
+    private fun checkIfCheckListFileExists(directoryFile:String, newFilePath:String) {
+        if (directoryFile == newFilePath) {
+            doesCheckListFileExist = true
+        }
+    }
+
+    private fun addElementFileContentToList(filePath: String) {
         FileReader(filePath).forEachLine { elementList.add(it) }
         adapter.notifyDataSetChanged()
+        println(elementList)
 
     }
 
+    private fun addCheckListFileContentToList(fullFilePath:String){
+        FileReader(fullFilePath).forEachLine { elementsCheckedList.add(it) }
+        adapter.notifyDataSetChanged()
+    }
+
     private fun loadElements(){
+        var numberOfCheckedBoxes = 0
         val path = this.getExternalFilesDir(null)
         val fullFilePath = filePathCreator()
 
         File(path.toString()).walk().forEach {directoryFile ->
-            checkIfFileExists(directoryFile.toString(),fullFilePath)
+            checkIfElementMapFileExists(directoryFile.toString(),fullFilePath)
         }
 
-        if(doesFileExist)
-            addFileContentToList(fullFilePath)
+        val taskId = intent.extras?.getLong("TASK_ID")
+        val filename = "CheckListMap.$taskId"
+        val checkListFullPath = path.toString() + "/$filename"
+
+        File(path.toString()).walk().forEach {directoryFile ->
+            checkIfCheckListFileExists(directoryFile.toString(),checkListFullPath)
+        }
+
+
+
+        if(doesElementMapFileExist)
+            addElementFileContentToList(fullFilePath)
+
+        if(doesCheckListFileExist){
+            println("Hei")
+            addCheckListFileContentToList(checkListFullPath)
+            println(elementList)
+            println(elementsCheckedList)
+            elementList.zip(elementsCheckedList).forEach {
+                dataModel!!.add(DataModel(it.first, it.second.toBoolean()))
+                if (it.second == "true"){
+                    numberOfCheckedBoxes += 1
+                }
+
+         }}
+        else{
+            for (elements in elementList){
+                dataModel!!.add(DataModel(elements, false))
+                elementsCheckedList.add("false")
+        }}
+
+        loadProgressBar(numberOfCheckedBoxes)
+
+
     }
 
 
-    private fun elementSelected(position: Int){
+     fun elementSelected(position: Int){
 
-        AlertDialog.Builder(this)
-                .setTitle(R.string.alert_element_title)
-                .setMessage(elementList[position])
+         val elementName = elementList[position]
+         elementList.removeAt(position)
+         deleteSingleElementInFile(elementName)
+         adapter.notifyDataSetChanged()
 
-                .setPositiveButton(R.string.delete)
-                { _, _ ->
-                    val elementName = elementList[position]
-                    elementList.removeAt(position)
-                    deleteSingleElementInFile(elementName)
-                    adapter.notifyDataSetChanged()
-                }
-                .setNegativeButton(R.string.cancel)
-                { dialog, _ -> dialog.cancel()
-                }
-
-                .create()
-                .show()
+//         AlertDialog.Builder(this)
+//                 .setTitle(R.string.alert_element_title)
+//                 .setMessage(elementList[position])
+//                 .setPositiveButton(R.string.delete)
+//                 { _, _ ->
+//                     val elementName = elementList[position]
+//                     elementList.removeAt(position)
+//                     deleteSingleElementInFile(elementName)
+//                     adapter.notifyDataSetChanged()
+//                 }
+//                 .setNegativeButton(R.string.cancel)
+//                 { dialog, _ -> dialog.cancel()
+//                 }
+//
+//                 .create()
+//                 .show()
     }
 
 
@@ -151,7 +229,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-        runFirebaseActivity(File(fullFilePath))
+        //runFirebaseActivity(File(fullFilePath))
         this.onSave?.invoke(fullFilePath.toUri())
     }
 
@@ -173,5 +251,69 @@ class IndividualTaskActivity : AppCompatActivity() {
 
     }
 
+    private fun checkBoxChecked(position: Int) {
+        val dataModel: DataModel = dataModel!![position]
+        dataModel.checked = !dataModel.checked
+
+        if(dataModel.checked) {
+            newProgress = 100 / elementList.size
+            progressStatus += newProgress
+            pBar.progress = progressStatus
+            pBarProgressText.text = "Task completed $progressStatus% of 100%"
+            numberOfElementsChecked += 1
+            elementsCheckedList[position] = "true"
+            createCheckListFile()
+        }else{
+            newProgress = 100 / elementList.size
+            progressStatus -= newProgress
+            pBar.progress = progressStatus
+            pBarProgressText.text = "Task completed $progressStatus% of 100%"
+            numberOfElementsChecked -= 1
+            elementsCheckedList[position] = "false"
+            createCheckListFile()
+        }
+
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun updateProgressBarAfterAdd(){
+        newProgress = (100 / elementList.size) * numberOfElementsChecked
+        progressStatus = newProgress
+        pBar.progress = progressStatus
+        pBarProgressText.text = "Task completed $progressStatus% of 100%"
+    }
+
+    private fun createCheckListFile(){
+        val taskId = intent.extras?.getLong("TASK_ID")
+        val filename = "CheckListMap.$taskId"
+        val path = this.getExternalFilesDir(null)
+        val fullFilePath = path.toString() + "/$filename"
+
+        FileOutputStream(fullFilePath, false).bufferedWriter().use { writer ->
+            elementsCheckedList.forEach{
+                writer.write("${it.toString()}\n")
+            }
+
+        }
+        //runFirebaseActivity(file)
+        this.onSave?.invoke(fullFilePath.toUri())
+
+
+    }
+
+    private fun loadProgressBar(numberOfCheckedBoxes:Int){
+        if(numberOfCheckedBoxes!= 0) {
+            newProgress = (100 / elementList.size) * numberOfCheckedBoxes
+            progressStatus = newProgress
+            pBar.progress = progressStatus
+            pBarProgressText.text = "Task completed $progressStatus% of 100%"
+
+            numberOfElementsChecked = numberOfCheckedBoxes
+        }
+    }
+
+
 
 }
+
+
