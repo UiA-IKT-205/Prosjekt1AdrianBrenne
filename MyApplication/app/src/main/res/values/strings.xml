@@ -8,7 +8,6 @@
     <string name="cancel">Cancel</string>
     <string name="add_a_task">+</string>
     <string name="delete_a_task">-</string>
-    <string name="add_an_element">Add an element</string>
     <string name="view_elements">View task</string>
     <string name="taskListButton">Delete</string>
     <string name="pBarProgressText">Task completed 0% of 100%</string>

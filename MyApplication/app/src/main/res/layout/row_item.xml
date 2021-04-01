@@ -14,26 +14,13 @@
         android:textSize="16sp"
         android:layout_alignParentLeft="true" />
 
-    <ImageButton
-        android:id="@+id/hei"
-        android:width="20dp"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:src="@android:drawable/ic_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-         />
     <CheckBox
         android:id="@+id/checkBox"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:clickable="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/hei"
-        android:layout_toStartOf="@id/hei"
-        />
+        android:layout_alignParentEnd="true"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:layout_alignParentRight="true" />
 </RelativeLayout>
