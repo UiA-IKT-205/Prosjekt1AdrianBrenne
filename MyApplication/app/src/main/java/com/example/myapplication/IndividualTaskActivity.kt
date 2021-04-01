@@ -91,9 +91,6 @@ class IndividualTaskActivity : AppCompatActivity() {
         startActivityForResult(intent, ADD_ELEMENT_REQUEST)
     }
 
-    private fun makeAdapter(list: List<String>): ArrayAdapter<String> =
-        ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
-
 
     fun doneAddingElementClicked(view: View) {
         val taskId = intent.extras?.getLong("TASK_ID")
@@ -134,7 +131,6 @@ class IndividualTaskActivity : AppCompatActivity() {
     private fun addElementFileContentToList(filePath: String) {
         FileReader(filePath).forEachLine { elementList.add(it) }
         adapter.notifyDataSetChanged()
-        println(elementList)
 
     }
 
@@ -166,10 +162,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             addElementFileContentToList(fullFilePath)
 
         if(doesCheckListFileExist){
-            println("Hei")
             addCheckListFileContentToList(checkListFullPath)
-            println(elementList)
-            println(elementsCheckedList)
             elementList.zip(elementsCheckedList).forEach {
                 dataModel!!.add(DataModel(it.first, it.second.toBoolean()))
                 if (it.second == "true"){
@@ -189,39 +182,13 @@ class IndividualTaskActivity : AppCompatActivity() {
     }
 
 
-     fun elementSelected(position: Int){
-
-         val elementName = elementList[position]
-         elementList.removeAt(position)
-         deleteSingleElementInFile(elementName)
-         adapter.notifyDataSetChanged()
-
-//         AlertDialog.Builder(this)
-//                 .setTitle(R.string.alert_element_title)
-//                 .setMessage(elementList[position])
-//                 .setPositiveButton(R.string.delete)
-//                 { _, _ ->
-//                     val elementName = elementList[position]
-//                     elementList.removeAt(position)
-//                     deleteSingleElementInFile(elementName)
-//                     adapter.notifyDataSetChanged()
-//                 }
-//                 .setNegativeButton(R.string.cancel)
-//                 { dialog, _ -> dialog.cancel()
-//                 }
-//
-//                 .create()
-//                 .show()
-    }
-
-
-    private fun deleteSingleElementInFile(elementName:String) {
+    private fun deleteSingleElementInFile() {
         val fullFilePath = filePathCreator()
 
-        addElementList.forEach {
-            if (it == elementName)
-                addElementList.remove(it)
-        }
+//        addElementList.forEach {
+//            if (it == elementName)
+//                addElementList.remove(it)
+//        }
 
         FileOutputStream(fullFilePath, false).bufferedWriter().use { writer ->
             elementList.forEach{
@@ -230,6 +197,21 @@ class IndividualTaskActivity : AppCompatActivity() {
 
         }
         //runFirebaseActivity(File(fullFilePath))
+        this.onSave?.invoke(fullFilePath.toUri())
+    }
+
+
+    private fun deleteSingleCheckInFile() {
+        val taskId = intent.extras?.getLong("TASK_ID")
+        val filename = "CheckListMap.$taskId"
+        val path = this.getExternalFilesDir(null)
+        val fullFilePath = path.toString() + "/$filename"
+
+        FileOutputStream(fullFilePath, false).bufferedWriter().use { writer ->
+            elementsCheckedList.forEach {
+                writer.write("${it.toString()}\n")
+            }
+        }
         this.onSave?.invoke(fullFilePath.toUri())
     }
 
@@ -309,6 +291,29 @@ class IndividualTaskActivity : AppCompatActivity() {
             pBarProgressText.text = "Task completed $progressStatus% of 100%"
 
             numberOfElementsChecked = numberOfCheckedBoxes
+        }
+    }
+
+    fun deleteElementClicked(view: View){
+        Toast.makeText(applicationContext,"Select the element you want to delete",Toast.LENGTH_SHORT).show()
+
+        elementListView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, id ->
+            elementList.removeAt(position)
+            elementsCheckedList.removeAt(position)
+            dataModel!!.removeAt(position)
+
+            deleteSingleElementInFile()
+            deleteSingleCheckInFile()
+
+            adapter.notifyDataSetChanged()
+
+            val result = Intent()
+            setResult(Activity.RESULT_OK, result)
+            finish()
+            startActivity(intent)
+
+            println(elementList)
+            println(elementsCheckedList)
         }
     }
 

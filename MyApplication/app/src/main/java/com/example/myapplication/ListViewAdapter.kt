@@ -14,7 +14,6 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
     private class ViewHolder {
         lateinit var txtName: TextView
         lateinit var checkBox: CheckBox
-        lateinit var delete: ImageButton
     }
     override fun getCount(): Int {
         return dataSet.size
@@ -38,8 +37,6 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
                 convertView.findViewById(R.id.txtName)
             viewHolder.checkBox =
                 convertView.findViewById(R.id.checkBox)
-            viewHolder.delete =
-                convertView.findViewById(R.id.hei)
             result = convertView
             convertView.tag = viewHolder
         } else {
@@ -49,14 +46,6 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
         val item: DataModel = getItem(position)
         viewHolder.txtName.text = item.name
         viewHolder.checkBox.isChecked = item.checked
-
-        //viewHolder.delete.setOnClickListener{
-
-            //IndividualTaskActivity().application.onCreate()
-        //    IndividualTaskActivity().elementSelected(position)
-        //}
-
-
 
 
         return result

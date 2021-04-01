@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == ADD_ELEMENT_REQUEST){
             if (resultCode == Activity.RESULT_OK){
+                println("yes")
                 finish()
                 startActivity(intent)
             }
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun saveTaskId(){
+    private fun saveTaskId(){
         task_id += 1
         getSharedPreferences("my_save", Activity.MODE_PRIVATE).edit().putInt("task_id", task_id).apply()
     }
