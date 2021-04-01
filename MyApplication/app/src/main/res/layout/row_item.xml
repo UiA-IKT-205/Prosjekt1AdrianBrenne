@@ -15,7 +15,7 @@
         android:layout_alignParentLeft="true" />
 
     <ImageButton
-        android:id="@+id/deleteElementButton"
+        android:id="@+id/hei"
         android:width="20dp"
         android:focusable="false"
         android:focusableInTouchMode="false"
@@ -33,7 +33,7 @@
         android:clickable="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/deleteElementButton"
-        android:layout_toStartOf="@id/deleteElementButton"
+        android:layout_toLeftOf="@id/hei"
+        android:layout_toStartOf="@id/hei"
         />
 </RelativeLayout>

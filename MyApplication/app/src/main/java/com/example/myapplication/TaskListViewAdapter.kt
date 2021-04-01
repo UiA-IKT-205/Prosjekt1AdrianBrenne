@@ -11,10 +11,10 @@ import java.util.*
 class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
         ArrayAdapter<Any?>(mContext, R.layout.tasklist_row_item, dataSet) {
 
-    private class ViewHolder {
+     class ViewHolder {
         lateinit var txtName: TextView
         lateinit var pbar: ProgressBar
-        lateinit var delete: ImageButton
+        lateinit var progressText: TextView
     }
     override fun getCount(): Int {
         return dataSet.size
@@ -22,6 +22,11 @@ class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) 
     override fun getItem(position: Int): TaskViewModel {
         return dataSet[position] as TaskViewModel
     }
+
+    fun removeItem(position: Int){
+        dataSet.removeAt(position)
+    }
+
     override fun getView(
             position: Int,
             convertView: View?,
@@ -38,8 +43,8 @@ class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) 
                     convertView.findViewById(R.id.taskName)
             viewHolder.pbar =
                     convertView.findViewById(R.id.taskListPBar)
-            viewHolder.delete =
-                    convertView.findViewById(R.id.deleteTaskButton)
+            viewHolder.progressText =
+                    convertView.findViewById(R.id.taskListPBarProgress)
             result = convertView
             convertView.tag = viewHolder
         } else {
@@ -49,6 +54,11 @@ class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) 
         val item: TaskViewModel = getItem(position)
         viewHolder.txtName.text = item.name
         viewHolder.pbar.progress = item.progress
+        viewHolder.progressText.text = "${viewHolder.pbar.progress}%"
+        
+//        viewHolder.delete.setOnClickListener {
+//            removeItem(position)
+//        }
 
         return result
     }

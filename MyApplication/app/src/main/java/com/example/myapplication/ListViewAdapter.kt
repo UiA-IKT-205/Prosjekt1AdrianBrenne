@@ -39,7 +39,7 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
             viewHolder.checkBox =
                 convertView.findViewById(R.id.checkBox)
             viewHolder.delete =
-                convertView.findViewById(R.id.deleteElementButton)
+                convertView.findViewById(R.id.hei)
             result = convertView
             convertView.tag = viewHolder
         } else {

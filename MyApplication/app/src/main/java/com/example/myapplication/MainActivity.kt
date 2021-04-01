@@ -2,26 +2,21 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
 import android.content.Intent
-import android.content.IntentFilter
-import android.content.res.Configuration
-import android.provider.ContactsContract
-import android.util.Log
+import android.widget.ImageButton
 import android.widget.ListView
+import android.widget.Toast
+import androidx.core.view.forEach
+import androidx.core.view.iterator
 import kotlinx.android.synthetic.main.tasklist_row_item.*
-import org.xml.sax.DTDHandler
+import kotlinx.android.synthetic.main.tasklist_row_item.view.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -31,7 +26,6 @@ class MainActivity : AppCompatActivity() {
     private val taskMap = mutableMapOf<Int,String>()
     private var keyList = mutableSetOf<String>()
     private var valueList = mutableSetOf<String>()
-    //private val adapter by lazy { makeAdapter(taskList) }
     private var doesFileExist = false
     private var task_id = 0
 
@@ -39,7 +33,9 @@ class MainActivity : AppCompatActivity() {
     private val ADD_ELEMENT_REQUEST = 2
 
     private lateinit var taskListView: ListView
+
     private var dataModel: ArrayList<TaskViewModel>? = null
+
     private lateinit var adapter: TaskListViewAdapter
 
 
@@ -51,19 +47,21 @@ class MainActivity : AppCompatActivity() {
 
         dataModel = ArrayList()
 
-        adapter = TaskListViewAdapter(dataModel!!,applicationContext)
+        adapter = TaskListViewAdapter(dataModel!!, applicationContext)
 
         taskListView.adapter = adapter
+
         loadElements()
         createMapOnStartup()
 
         loadProgressBar()
 
         taskListView.onItemClickListener =
-            AdapterView.OnItemClickListener { _, _, position, id ->
-                taskSelected(position,id)
-            }
+                AdapterView.OnItemClickListener { _, _, position, id ->
+                    taskSelected(position,id)
+                }
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -81,7 +79,6 @@ class MainActivity : AppCompatActivity() {
                     createFile()
                     saveMap(task_id, task)
                     adapter.notifyDataSetChanged()
-                    println(taskMap)
                 }
             }
 
@@ -109,35 +106,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun makeAdapter(list: List<String>): ArrayAdapter<String> =
-        ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
-
 
     private fun taskSelected(position: Int, id: Long) {
-        AlertDialog.Builder(this)
-                .setTitle(R.string.alert_task_title)
-                .setMessage(taskList[position])
-                .setNeutralButton(R.string.view_elements)
-                {
-                    _,_ ->
-                   viewElements(id)
-                }
-                .setPositiveButton(R.string.delete)
-                { _, _ ->
-                    deleteElementFile(id)
-                    val taskId = getTaskid(taskList[id.toInt()])
-                    saveNewListAfterDeletion(taskId, position)
-                    taskList.removeAt(position)
-                    createFile()
-                    taskMap.remove(taskId)
-                    adapter.notifyDataSetChanged()
-                }
-                .setNegativeButton(R.string.cancel)
-                { dialog, _ -> dialog.cancel()
-                }
 
-                .create()
-                .show()
+        viewElements(id)
 
     }
 
@@ -155,6 +127,12 @@ class MainActivity : AppCompatActivity() {
         val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$taskId"
         File(filePath).delete()
 
+    }
+
+    private fun deleteCheckListFile(id:Long){
+        val taskId = getTaskid(taskList[id.toInt()])
+        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/CheckListMap.$taskId"
+        File(filePath).delete()
     }
 
     private fun createFile(){
@@ -187,6 +165,8 @@ class MainActivity : AppCompatActivity() {
 
         if(doesFileExist)
             addFileContentToList(fullFilePath)
+
+        doesFileExist = false
     }
 
     private fun checkIfFileExists(directoryFile:String, newFilePath:String) {
@@ -199,6 +179,8 @@ class MainActivity : AppCompatActivity() {
         FileReader(filePath).forEachLine { taskList.add(it) }
         FileReader(filePath).forEachLine { valueList.add(it) }
 
+        println(taskList)
+
         adapter.notifyDataSetChanged()
 
     }
@@ -206,7 +188,6 @@ class MainActivity : AppCompatActivity() {
     private fun saveMap(taskid:Int, task:String){
         keyList.add(taskid.toString())
         valueList.add(task)
-        println(valueList)
         deleteThenAddToSharedPreferences()
     }
 
@@ -228,23 +209,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         println(taskMap)
+
+
     }
 
     private fun saveNewListAfterDeletion(taskid: Int, position: Int){
         keyList.remove("$taskid")
-        valueList.remove(taskList[position])
         deleteThenAddToSharedPreferences()
     }
 
     private fun deleteThenAddToSharedPreferences() {
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("key_list").apply()
-        //getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("value_list").apply()
-
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",keyList).apply()
-        //getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("value_list",valueList).apply()
-
-        //println(getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("value_list",valueList) as MutableSet<String>)
-
     }
 
     private fun runFirebaseActivity(file:File){
@@ -259,7 +235,6 @@ class MainActivity : AppCompatActivity() {
     private fun loadProgressBar(){
         var n = 0
         val path = this.getExternalFilesDir(null)
-        println(taskMap)
 
         for (id in taskMap.keys){
             var numberOfCheckedBoxes = 0
@@ -267,23 +242,58 @@ class MainActivity : AppCompatActivity() {
             var numberOfElements = 0
             val filename = "CheckListMap.$id"
             val checkListFullPath = path.toString() + "/$filename"
-            FileReader(checkListFullPath).forEachLine {
-                if (it == "true")
-                    numberOfCheckedBoxes += 1
-                numberOfElements += 1
+
+            File(path.toString()).walk().forEach {directoryFile ->
+                checkIfFileExists(directoryFile.toString(),checkListFullPath)
             }
 
-            println(numberOfCheckedBoxes)
-            progress = (100 / numberOfElements) * numberOfCheckedBoxes
-            println(progress)
-            dataModel!!.add(TaskViewModel(taskList[n],progress))
+            if(doesFileExist){
+                FileReader(checkListFullPath).forEachLine {
+                    if (it == "true")
+                        numberOfCheckedBoxes += 1
+                    numberOfElements += 1
+                }
 
-            n += 1
+                progress = (100 / numberOfElements) * numberOfCheckedBoxes
+                dataModel!!.add(TaskViewModel(taskList[n],progress))
+
+                n += 1
+                doesFileExist = false
+            }else{
+                dataModel!!.add(TaskViewModel(taskList[n],0))
+            }
+
 
         }
         adapter.notifyDataSetChanged()
 
     }
+
+    fun deleteTaskClicked(view: View) {
+        Toast.makeText(applicationContext,"Select the task you want to delete",Toast.LENGTH_SHORT).show()
+
+        taskListView.onItemClickListener = AdapterView.OnItemClickListener { _,_, position, id ->
+            deleteElementFile(id)
+            deleteCheckListFile(id)
+
+            val taskId = getTaskid(taskList[id.toInt()])
+            taskMap.remove(taskId)
+            taskList.removeAt(position)
+            dataModel!!.removeAt(position)
+
+            saveNewListAfterDeletion(taskId, position)
+            createFile()
+
+            adapter.notifyDataSetChanged()
+            Toast.makeText(applicationContext,"Deleted",Toast.LENGTH_SHORT).show()
+            finish()
+            startActivity(intent)
+
+
+        }
+
+    }
+
 
 }
 
