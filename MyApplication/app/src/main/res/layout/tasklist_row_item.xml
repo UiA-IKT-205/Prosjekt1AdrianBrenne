@@ -15,18 +15,18 @@
         android:textSize="16sp"
         android:layout_alignParentLeft="true" />
 
-    <ImageButton
-        android:id="@+id/deleteTaskButton"
-        android:width="20dp"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:src="@android:drawable/ic_delete"
+    <TextView
+        android:id="@+id/taskListPBarProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        />
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:width="35dp"
+        android:focusable="false" />
 
     <ProgressBar
         android:id="@+id/taskListPBar"
