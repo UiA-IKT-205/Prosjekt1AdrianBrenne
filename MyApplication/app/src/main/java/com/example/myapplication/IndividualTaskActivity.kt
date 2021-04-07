@@ -111,7 +111,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-        //runFirebaseActivity(file)
+        runFirebaseServiceForElements(file)
         this.onSave?.invoke(file.toUri())
     }
 
@@ -196,7 +196,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-        //runFirebaseActivity(File(fullFilePath))
+        runFirebaseServiceForElements(File(fullFilePath))
         this.onSave?.invoke(fullFilePath.toUri())
     }
 
@@ -212,6 +212,7 @@ class IndividualTaskActivity : AppCompatActivity() {
                 writer.write("${it.toString()}\n")
             }
         }
+        runFirebaseServiceForChecklist(File(fullFilePath))
         this.onSave?.invoke(fullFilePath.toUri())
     }
 
@@ -224,11 +225,20 @@ class IndividualTaskActivity : AppCompatActivity() {
         return fullFilePath
     }
 
-    private fun runFirebaseActivity(file:File){
-        val intent = Intent(this, FirebaseUploadActivity::class.java).apply {
+    private fun runFirebaseServiceForElements(file:File){
+        val intent = Intent(this, FireBaseUploadService::class.java).apply {
             putExtra("elementfile",file)
         }
-        startActivity(intent)
+        startService(intent)
+
+
+    }
+
+    private fun runFirebaseServiceForChecklist(file:File){
+        val intent = Intent(this, FireBaseUploadService::class.java).apply {
+            putExtra("checklistfile",file)
+        }
+        startService(intent)
 
 
     }
@@ -277,7 +287,7 @@ class IndividualTaskActivity : AppCompatActivity() {
             }
 
         }
-        //runFirebaseActivity(file)
+        runFirebaseServiceForChecklist(File(fullFilePath))
         this.onSave?.invoke(fullFilePath.toUri())
 
 
@@ -312,8 +322,6 @@ class IndividualTaskActivity : AppCompatActivity() {
             finish()
             startActivity(intent)
 
-            println(elementList)
-            println(elementsCheckedList)
         }
     }
 
