@@ -10,6 +10,7 @@ import android.content.Intent
 import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.core.view.forEach
 import androidx.core.view.iterator
 import kotlinx.android.synthetic.main.tasklist_row_item.*
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 AdapterView.OnItemClickListener { _, _, position, id ->
                     taskSelected(position,id)
                 }
+
     }
 
 
@@ -86,7 +88,6 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == ADD_ELEMENT_REQUEST){
             if (resultCode == Activity.RESULT_OK){
-                println("yes")
                 finish()
                 startActivity(intent)
             }
@@ -126,6 +127,14 @@ class MainActivity : AppCompatActivity() {
     private fun deleteElementFile(id:Long){
         val taskId = getTaskid(taskList[id.toInt()])
         val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$taskId"
+        val file = File(filePath)
+
+        val intent = Intent(this, FireBaseUploadService::class.java).apply {
+            putExtra("deleteElementFile",file)
+        }
+
+        startService(intent)
+
         File(filePath).delete()
 
     }
@@ -133,6 +142,15 @@ class MainActivity : AppCompatActivity() {
     private fun deleteCheckListFile(id:Long){
         val taskId = getTaskid(taskList[id.toInt()])
         val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/CheckListMap.$taskId"
+
+        val file = File(filePath)
+
+        val intent = Intent(this, FireBaseUploadService::class.java).apply {
+            putExtra("deleteCheckFile",file)
+        }
+
+        startService(intent)
+
         File(filePath).delete()
     }
 
@@ -146,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                 writer.write("${it.toString()}\n")
             }
         }
-        //runFirebaseActivity(file)
+        runFirebaseService(file)
     }
 
     private fun getTaskid(taskName:String): Int {
@@ -180,8 +198,6 @@ class MainActivity : AppCompatActivity() {
         FileReader(filePath).forEachLine { taskList.add(it) }
         FileReader(filePath).forEachLine { valueList.add(it) }
 
-        println(taskList)
-
         adapter.notifyDataSetChanged()
 
     }
@@ -209,9 +225,6 @@ class MainActivity : AppCompatActivity() {
             taskMap[it.first.toInt()] = it.second
         }
 
-        println(taskMap)
-
-
     }
 
     private fun saveNewListAfterDeletion(taskid: Int, position: Int){
@@ -224,12 +237,11 @@ class MainActivity : AppCompatActivity() {
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",keyList).apply()
     }
 
-    private fun runFirebaseActivity(file:File){
-        val intent = Intent(this, FirebaseUploadActivity::class.java).apply {
+    private fun runFirebaseService(file:File){
+        val intent = Intent(this, FireBaseUploadService::class.java).apply {
             putExtra("taskfile",file)
         }
-        startActivity(intent)
-
+        startService(intent)
 
     }
 
@@ -297,6 +309,7 @@ class MainActivity : AppCompatActivity() {
 
 
 }
+
 
 
 
