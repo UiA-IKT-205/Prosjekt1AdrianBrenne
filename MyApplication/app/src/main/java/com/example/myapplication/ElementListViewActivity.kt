@@ -92,7 +92,7 @@ class ElementListViewActivity : AppCompatActivity() {
 
     fun doneAddingElementClicked(view: View) {
         val taskId = intent.extras?.getLong("TASK_ID")
-        val filename = "ElementMap.$taskId"
+        val filename = "ElementList.$taskId"
         val path = this.getExternalFilesDir(null)
         createFile(path.toString(), filename, listOfElements)
 
@@ -142,7 +142,7 @@ class ElementListViewActivity : AppCompatActivity() {
         }
 
         val taskId = intent.extras?.getLong("TASK_ID")
-        val filename = "CheckListMap.$taskId"
+        val filename = "CheckList.$taskId"
         val checkListFullPath = path.toString() + "/$filename"
 
         File(path.toString()).walk().forEach {directoryFile ->
@@ -182,7 +182,7 @@ class ElementListViewActivity : AppCompatActivity() {
 
     private fun deleteSingleCheckInFile() {
         val taskId = intent.extras?.getLong("TASK_ID")
-        val filename = "CheckListMap.$taskId"
+        val filename = "CheckList.$taskId"
         val path = this.getExternalFilesDir(null)
         val fullFilePath = path.toString() + "/$filename"
 
@@ -196,7 +196,7 @@ class ElementListViewActivity : AppCompatActivity() {
 
     private fun elementFilePathCreator(): String {
         val taskId = intent.extras?.getLong("TASK_ID")
-        val filename = "ElementMap.$taskId"
+        val filename = "ElementList.$taskId"
         val path = this.getExternalFilesDir(null)
 
         return path.toString() + "/$filename"
@@ -258,7 +258,7 @@ class ElementListViewActivity : AppCompatActivity() {
 
     private fun createCheckListFile(){
         val taskId = intent.extras?.getLong("TASK_ID")
-        val filename = "CheckListMap.$taskId"
+        val filename = "CheckList.$taskId"
         val path = this.getExternalFilesDir(null)
         val fullFilePath = path.toString() + "/$filename"
 
