@@ -1,15 +1,16 @@
-package com.example.myapplication
+package com.example.myapplication.adapters
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.example.myapplication.R
+import com.example.myapplication.data.ElementListViewModel
 import java.util.*
 
-class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
-    ArrayAdapter<Any?>(mContext, R.layout.row_item, dataSet) {
+class ElementListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
+    ArrayAdapter<Any?>(mContext, R.layout.element_row_item, dataSet) {
 
     private class ViewHolder {
         lateinit var txtName: TextView
@@ -18,8 +19,8 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
     override fun getCount(): Int {
         return dataSet.size
     }
-    override fun getItem(position: Int): DataModel {
-        return dataSet[position] as DataModel
+    override fun getItem(position: Int): ElementListViewModel {
+        return dataSet[position] as ElementListViewModel
     }
     override fun getView(
         position: Int,
@@ -32,7 +33,7 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
         if (convertView == null) {
             viewHolder = ViewHolder()
             convertView =
-                LayoutInflater.from(parent.context).inflate(R.layout.row_item, parent, false)
+                LayoutInflater.from(parent.context).inflate(R.layout.element_row_item, parent, false)
             viewHolder.txtName =
                 convertView.findViewById(R.id.txtName)
             viewHolder.checkBox =
@@ -43,7 +44,7 @@ class ListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
             viewHolder = convertView.tag as ViewHolder
             result = convertView
         }
-        val item: DataModel = getItem(position)
+        val item: ElementListViewModel = getItem(position)
         viewHolder.txtName.text = item.name
         viewHolder.checkBox.isChecked = item.checked
 

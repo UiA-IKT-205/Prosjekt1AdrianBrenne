@@ -11,15 +11,14 @@
         android:theme="@style/Theme.MyApplication">
 
         <service
-            android:name=".FireBaseUploadService"
+            android:name=".services.FireBaseUploadService"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".IndividualTaskActivity"
+        <activity android:name=".ElementListViewActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".TaskDescriptionActivity" />
         <activity
-            android:name=".MainActivity"
+            android:name=".TaskListViewActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>

@@ -1,11 +1,12 @@
-package com.example.myapplication
+package com.example.myapplication.adapters
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.example.myapplication.R
+import com.example.myapplication.data.TaskListViewModel
 import java.util.*
 
 class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) :
@@ -19,12 +20,8 @@ class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) 
     override fun getCount(): Int {
         return dataSet.size
     }
-    override fun getItem(position: Int): TaskViewModel {
-        return dataSet[position] as TaskViewModel
-    }
-
-    fun removeItem(position: Int){
-        dataSet.removeAt(position)
+    override fun getItem(position: Int): TaskListViewModel {
+        return dataSet[position] as TaskListViewModel
     }
 
     override fun getView(
@@ -51,14 +48,10 @@ class TaskListViewAdapter(private val dataSet: ArrayList<*>, mContext: Context) 
             viewHolder = convertView.tag as ViewHolder
             result = convertView
         }
-        val item: TaskViewModel = getItem(position)
+        val item: TaskListViewModel = getItem(position)
         viewHolder.txtName.text = item.name
         viewHolder.pbar.progress = item.progress
         viewHolder.progressText.text = "${viewHolder.pbar.progress}%"
-        
-//        viewHolder.delete.setOnClickListener {
-//            removeItem(position)
-//        }
 
         return result
     }
