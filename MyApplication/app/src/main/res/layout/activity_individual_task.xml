@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_color"
     tools:context=".IndividualTaskActivity">
 
     <ProgressBar
@@ -11,14 +12,15 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:progress="1"
+        android:layout_marginTop="84dp"
         android:max="100"
-        android:minHeight="50dp"
         android:minWidth="200dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:minHeight="50dp"
+        android:progress="1"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/pBarProgressText"
@@ -29,49 +31,61 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
-    <Button
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addElementInTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:foreground="@drawable/ic_button_add"
+        android:layout_width="86dp"
+        android:layout_height="81dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
         android:onClick="addElementClicked"
         android:padding="16dp"
         android:text="@string/add_a_task"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout_editor_absoluteY="59dp" />
+        android:layout_marginEnd="16dp" />
 
-    <Button
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/deleteElementInTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
+        android:foreground="@drawable/ic_button_remove"
+        android:layout_width="86dp"
+        android:layout_height="81dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="16dp"
         android:onClick="deleteElementClicked"
+        android:padding="16dp"
         android:text="@string/delete_a_task"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout_editor_absoluteY="59dp" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="16dp" />
+
 
     <ListView
         android:id="@+id/elementListView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="413dp"
+        android:layout_height="568dp"
         android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pBarProgressText"
-        app:layout_constraintBottom_toTopOf="@id/doneButton"/>
+        app:layout_constraintVertical_bias="1.0" />
 
-
-    <Button
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/doneButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:foreground="@drawable/ic_button_done"
         android:onClick="doneAddingElementClicked"
         android:padding="@dimen/default_padding"
         android:text="@string/done"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintLeft_toRightOf="parent"
-        app:layout_constraintRight_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintRight_toLeftOf="parent" />
+
+    <include layout="@layout/toolbar_sheet" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

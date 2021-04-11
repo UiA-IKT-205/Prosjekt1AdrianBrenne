@@ -1,15 +1,10 @@
 <resources>
     <string name="app_name">Huskeliste</string>
-    <string name="description">Description</string>
+    <string name="description">Name</string>
     <string name="done">Done</string>
-    <string name="alert_task_title">Task</string>
-    <string name="alert_element_title">Element</string>
-    <string name="delete">Delete</string>
-    <string name="cancel">Cancel</string>
     <string name="add_a_task">+</string>
     <string name="delete_a_task">-</string>
-    <string name="view_elements">View task</string>
-    <string name="taskListButton">Delete</string>
     <string name="pBarProgressText">Task completed 0% of 100%</string>
+    <string name="header_text">RememberMe</string>
 
 </resources>
