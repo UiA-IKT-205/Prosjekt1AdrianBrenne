@@ -4,12 +4,10 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
-import android.widget.ImageButton
-import android.widget.ListView
-import android.widget.Toast
+import android.widget.*
+import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.core.view.forEach
 import androidx.core.view.iterator
@@ -39,10 +37,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: TaskListViewAdapter
 
+    private lateinit var toolbar: Toolbar
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         taskListView = findViewById<View>(R.id.taskListView) as ListView
 
@@ -242,6 +246,8 @@ class MainActivity : AppCompatActivity() {
             putExtra("taskfile",file)
         }
         startService(intent)
+
+
 
     }
 

@@ -9,22 +9,20 @@
         android:id="@+id/taskName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:textColor="@android:color/background_dark"
-        android:textSize="16sp"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="0dp"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/taskListPBarProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_alignEnd="@id/taskListPBarProgress"
+        android:layout_alignRight="@id/taskListPBarProgress"
         android:width="35dp"
         android:focusable="false" />
 
@@ -33,12 +31,12 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:progress="1"
-        android:max="100"
-        android:minHeight="50dp"
-        android:minWidth="150dp"
+        android:layout_below="@+id/taskName"
         android:layout_centerInParent="true"
-        android:layout_alignParentTop="true"
-        />
+        android:layout_marginTop="-6dp"
+        android:max="100"
+        android:minWidth="150dp"
+        android:minHeight="50dp"
+        android:progress="1" />
 
 </RelativeLayout>

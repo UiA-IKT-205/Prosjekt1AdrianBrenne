@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AppCompat.NoActionBar.">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <color name="header_color">#1AAAA4</color>
+    <color name="header_text_color">#646C6B</color>
+    <color name="background_color">#7C8180</color>
+</resources>

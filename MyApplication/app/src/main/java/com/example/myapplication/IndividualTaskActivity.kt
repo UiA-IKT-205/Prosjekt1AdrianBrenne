@@ -11,12 +11,14 @@ import android.provider.ContactsContract
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
+import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.TaskDescriptionActivity.Companion.EXTRA_TASK_DESCRIPTION
 import kotlinx.android.synthetic.main.activity_individual_task.*
 import kotlinx.android.synthetic.main.row_item.*
 import kotlinx.android.synthetic.main.row_item.view.*
+import kotlinx.android.synthetic.main.toolbar_sheet.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
@@ -42,10 +44,17 @@ class IndividualTaskActivity : AppCompatActivity() {
     private var newProgress = 0
     private var numberOfElementsChecked = 0
 
+    private lateinit var toolbar: Toolbar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_individual_task)
-        title = intent.extras?.getString("TASK_NAME")
+        val title = intent.extras?.getString("TASK_NAME")
+
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        toolbar.title = "$title | "
 
         elementListView = findViewById<View>(R.id.elementListView) as ListView
 
