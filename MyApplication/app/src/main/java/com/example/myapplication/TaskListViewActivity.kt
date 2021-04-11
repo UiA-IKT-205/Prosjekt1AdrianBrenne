@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -10,43 +9,35 @@ import android.content.Intent
 import android.text.InputType
 import android.widget.*
 import androidx.appcompat.widget.Toolbar
-import androidx.core.net.toUri
-import androidx.core.view.forEach
-import androidx.core.view.iterator
-import kotlinx.android.synthetic.main.tasklist_row_item.*
-import kotlinx.android.synthetic.main.tasklist_row_item.view.*
+import com.example.myapplication.adapters.TaskListViewAdapter
+import com.example.myapplication.data.TaskListViewModel
+import com.example.myapplication.services.FireBaseUploadService
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
-import java.util.*
 import kotlin.collections.ArrayList
 
 
-class MainActivity : AppCompatActivity() {
-    private val taskList = mutableListOf<String>()
-    private val taskMap = mutableMapOf<Int,String>()
-    private var keyList = mutableSetOf<String>()
-    private var valueList = mutableSetOf<String>()
-    private var doesFileExist = false
-    private var task_id = 0
+class TaskListViewActivity : AppCompatActivity() {
+    private val listOfTasks = mutableListOf<String>()
+    private val mapOfTaskAndId = mutableMapOf<Int,String>()
+    private var taskNameList = mutableSetOf<String>()
 
-    private val ADD_TASK_REQUEST = 1
+    private var dataModel: ArrayList<TaskListViewModel>? = null
+
+    private var doesFileExist = false
+    private var uTaskId = 0
     private val ADD_ELEMENT_REQUEST = 2
 
     private lateinit var taskListView: ListView
-
-    private var dataModel: ArrayList<TaskViewModel>? = null
-
     private lateinit var adapter: TaskListViewAdapter
-
     private lateinit var toolbar: Toolbar
-
-    private lateinit var task: String
+    private lateinit var taskName: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_task_list_view)
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -72,27 +63,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-//        if (requestCode == ADD_TASK_REQUEST) {
-//
-//            if (resultCode == Activity.RESULT_OK) {
-//
-//                val task = data?.getStringExtra(TaskDescriptionActivity.EXTRA_TASK_DESCRIPTION)
-//                task?.let {
-////                    saveTaskId()
-////                    taskMap[task_id] = task
-////                    taskList.add(task)
-////                    dataModel!!.add(TaskViewModel(task,0))
-////                    createFile()
-////                    saveMap(task_id, task)
-////                    adapter.notifyDataSetChanged()
-//                }
-//            }
-//
-//        }
 
         if (requestCode == ADD_ELEMENT_REQUEST){
             if (resultCode == Activity.RESULT_OK){
@@ -100,43 +72,41 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-
-
     }
 
     private fun saveTaskId(){
-        task_id += 1
-        getSharedPreferences("my_save", Activity.MODE_PRIVATE).edit().putInt("task_id", task_id).apply()
+        uTaskId += 1
+        getSharedPreferences("my_save", Activity.MODE_PRIVATE).edit().putInt("task_id", uTaskId).apply()
     }
 
 
     fun addTaskClicked(view: View) {
+        println(mapOfTaskAndId)
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder.setTitle("Add a task")
 
         val input = EditText(this)
 
-        input.hint = "Taskname"
+        input.hint = "Task name"
         input.inputType = InputType.TYPE_CLASS_TEXT
         builder.setView(input)
 
         builder.setPositiveButton("OK") { _, _ ->
-            task = input.text.toString()
-            newTaskBackendControl(task)
+            taskName = input.text.toString()
+            newTaskBackendControl(taskName)
         }
         builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
 
         builder.show()
-
     }
 
     private fun newTaskBackendControl(task:String){
         saveTaskId()
-        taskMap[task_id] = task
-        taskList.add(task)
-        dataModel!!.add(TaskViewModel(task,0))
+        mapOfTaskAndId[uTaskId] = task
+        listOfTasks.add(task)
+        dataModel!!.add(TaskListViewModel(task,0))
         createFile()
-        saveMap(task_id, task)
+        saveMap(uTaskId)
         adapter.notifyDataSetChanged()
     }
 
@@ -145,39 +115,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun viewElements(id:Long){
-        val taskId = getTaskid(taskList[id.toInt()])
+        val taskId = getTaskId(listOfTasks[id.toInt()])
 
-        val intent = Intent(this, IndividualTaskActivity::class.java)
-        intent.putExtra("TASK_NAME", taskList[id.toInt()])
+        val intent = Intent(this, ElementListViewActivity::class.java)
+        intent.putExtra("TASK_NAME", listOfTasks[id.toInt()])
         intent.putExtra("TASK_ID",taskId.toLong())
         startActivityForResult(intent, ADD_ELEMENT_REQUEST)
     }
 
     private fun deleteElementFile(id:Long){
-        val taskId = getTaskid(taskList[id.toInt()])
+        val taskId = getTaskId(listOfTasks[id.toInt()])
         val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$taskId"
         val file = File(filePath)
 
         val intent = Intent(this, FireBaseUploadService::class.java).apply {
             putExtra("deleteElementFile",file)
         }
-
         startService(intent)
 
         File(filePath).delete()
-
     }
 
     private fun deleteCheckListFile(id:Long){
-        val taskId = getTaskid(taskList[id.toInt()])
+        val taskId = getTaskId(listOfTasks[id.toInt()])
         val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/CheckListMap.$taskId"
-
         val file = File(filePath)
 
         val intent = Intent(this, FireBaseUploadService::class.java).apply {
             putExtra("deleteCheckFile",file)
         }
-
         startService(intent)
 
         File(filePath).delete()
@@ -189,18 +155,15 @@ class MainActivity : AppCompatActivity() {
         val file = File(path,fileName)
 
         FileOutputStream(file, false).bufferedWriter().use { writer ->
-            taskList.forEach{
-                writer.write("${it.toString()}\n")
+            listOfTasks.forEach{
+                writer.write("${it}\n")
             }
         }
         runFirebaseService(file)
     }
 
-    private fun getTaskid(taskName:String): Int {
-        val taskId = taskMap.filterValues { it == taskName }.keys.first()
-
-        return taskId
-
+    private fun getTaskId(taskName:String): Int {
+        return mapOfTaskAndId.filterValues { it == taskName }.keys.first()
     }
 
     private fun loadElements(){
@@ -224,46 +187,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addFileContentToList(filePath: String) {
-        FileReader(filePath).forEachLine { taskList.add(it) }
-        FileReader(filePath).forEachLine { valueList.add(it) }
-
-        adapter.notifyDataSetChanged()
-
+        FileReader(filePath).forEachLine { listOfTasks.add(it) }
     }
 
-    private fun saveMap(taskid:Int, task:String){
-        keyList.add(taskid.toString())
-        valueList.add(task)
+    private fun saveMap(taskId:Int){
+        taskNameList.add(taskId.toString())
         deleteThenAddToSharedPreferences()
     }
 
     private fun createMapOnStartup(){
+        uTaskId = getSharedPreferences("my_save",Activity.MODE_PRIVATE).getInt("task_id",0)
+        taskNameList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("key_list",taskNameList) as MutableSet<String>
 
-        //getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("key_list").apply()
-
-
-        task_id = getSharedPreferences("my_save",Activity.MODE_PRIVATE).getInt("task_id",0)
-        keyList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("key_list",keyList) as MutableSet<String>
-        //valueList = getSharedPreferences("my_save2", Activity.MODE_PRIVATE).getStringSet("value_list",valueList) as MutableSet<String>
-
-        //println(keyList)
-        //println(valueList)
-
-        //Fyller mappet med begge listene
-        keyList.zip(valueList).forEach {
-            taskMap[it.first.toInt()] = it.second
+        taskNameList.zip(listOfTasks).forEach {
+            mapOfTaskAndId[it.first.toInt()] = it.second
         }
-
     }
 
-    private fun saveNewListAfterDeletion(taskid: Int, position: Int){
-        keyList.remove("$taskid")
+    private fun saveNewListAfterDeletion(taskId: Int){
+        taskNameList.remove("$taskId")
         deleteThenAddToSharedPreferences()
     }
 
     private fun deleteThenAddToSharedPreferences() {
         getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().remove("key_list").apply()
-        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",keyList).apply()
+        getSharedPreferences("my_save2", Activity.MODE_PRIVATE).edit().putStringSet("key_list",taskNameList).apply()
     }
 
     private fun runFirebaseService(file:File){
@@ -271,18 +219,15 @@ class MainActivity : AppCompatActivity() {
             putExtra("taskfile",file)
         }
         startService(intent)
-
-
-
     }
 
     private fun loadProgressBar(){
-        var n = 0
+        var indexCounter = 0
         val path = this.getExternalFilesDir(null)
 
-        for (id in taskMap.keys){
+        for (id in mapOfTaskAndId.keys){
             var numberOfCheckedBoxes = 0
-            var progress = 0
+            var progress: Int
             var numberOfElements = 0
             val filename = "CheckListMap.$id"
             val checkListFullPath = path.toString() + "/$filename"
@@ -290,55 +235,44 @@ class MainActivity : AppCompatActivity() {
             File(path.toString()).walk().forEach {directoryFile ->
                 checkIfFileExists(directoryFile.toString(),checkListFullPath)
             }
-
             if(doesFileExist){
                 FileReader(checkListFullPath).forEachLine {
                     if (it == "true")
                         numberOfCheckedBoxes += 1
                     numberOfElements += 1
                 }
-
                 progress = (100 / numberOfElements) * numberOfCheckedBoxes
-                dataModel!!.add(TaskViewModel(taskList[n],progress))
+                dataModel!!.add(TaskListViewModel(listOfTasks[indexCounter],progress))
 
-                n += 1
+                indexCounter += 1
                 doesFileExist = false
             }else{
-                dataModel!!.add(TaskViewModel(taskList[n],0))
+                dataModel!!.add(TaskListViewModel(listOfTasks[indexCounter],0))
             }
-
-
         }
         adapter.notifyDataSetChanged()
-
     }
 
     fun deleteTaskClicked(view: View) {
         Toast.makeText(applicationContext,"Select the task you want to delete",Toast.LENGTH_SHORT).show()
-
         taskListView.onItemClickListener = AdapterView.OnItemClickListener { _,_, position, id ->
             deleteElementFile(id)
             deleteCheckListFile(id)
 
-            val taskId = getTaskid(taskList[id.toInt()])
-            taskMap.remove(taskId)
-            taskList.removeAt(position)
+            val taskId = getTaskId(listOfTasks[id.toInt()])
+            mapOfTaskAndId.remove(taskId)
+            listOfTasks.removeAt(position)
             dataModel!!.removeAt(position)
 
-            saveNewListAfterDeletion(taskId, position)
+            saveNewListAfterDeletion(taskId)
             createFile()
 
             adapter.notifyDataSetChanged()
             Toast.makeText(applicationContext,"Deleted",Toast.LENGTH_SHORT).show()
             finish()
             startActivity(intent)
-
-
         }
-
     }
-
-
 }
 
 
