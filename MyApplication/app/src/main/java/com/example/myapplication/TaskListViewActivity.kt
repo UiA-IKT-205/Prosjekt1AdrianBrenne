@@ -7,7 +7,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.text.InputType
+import android.util.Log
 import android.widget.*
+import androidx.annotation.MainThread
 import androidx.appcompat.widget.Toolbar
 import com.example.myapplication.adapters.TaskListViewAdapter
 import com.example.myapplication.data.TaskListViewModel
@@ -125,28 +127,47 @@ class TaskListViewActivity : AppCompatActivity() {
 
     private fun deleteElementFile(id:Long){
         val taskId = getTaskId(listOfTasks[id.toInt()])
-        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementMap.$taskId"
+        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/ElementList.$taskId"
+        val path = this.getExternalFilesDir(null)
         val file = File(filePath)
 
-        val intent = Intent(this, FireBaseUploadService::class.java).apply {
-            putExtra("deleteElementFile",file)
+        File(path.toString()).walk().forEach {directoryFile ->
+            checkIfFileExists(directoryFile.toString(),filePath)
         }
-        startService(intent)
 
+        if (doesFileExist){
+            val intent = Intent(this, FireBaseUploadService::class.java).apply {
+                putExtra("deleteElementFile",file)
+            }
+            startService(intent)
+        }else
+            Log.d("ElementFile","No elementfile found, no delete needed.")
         File(filePath).delete()
+
+        doesFileExist = false
     }
 
     private fun deleteCheckListFile(id:Long){
         val taskId = getTaskId(listOfTasks[id.toInt()])
-        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/CheckListMap.$taskId"
+        val filePath = "/storage/emulated/0/Android/data/com.example.myapplication/files/CheckList.$taskId"
+        val path = this.getExternalFilesDir(null)
         val file = File(filePath)
 
-        val intent = Intent(this, FireBaseUploadService::class.java).apply {
-            putExtra("deleteCheckFile",file)
+        File(path.toString()).walk().forEach {directoryFile ->
+            checkIfFileExists(directoryFile.toString(),filePath)
         }
-        startService(intent)
+
+        if(doesFileExist){
+            val intent = Intent(this, FireBaseUploadService::class.java).apply {
+                putExtra("deleteCheckFile",file)
+            }
+            startService(intent)
+        }else
+            Log.d("CheckFile","No checkfile found, no delete needed.")
 
         File(filePath).delete()
+
+        doesFileExist = false
     }
 
     private fun createFile(){
@@ -229,7 +250,7 @@ class TaskListViewActivity : AppCompatActivity() {
             var numberOfCheckedBoxes = 0
             var progress: Int
             var numberOfElements = 0
-            val filename = "CheckListMap.$id"
+            val filename = "CheckList.$id"
             val checkListFullPath = path.toString() + "/$filename"
 
             File(path.toString()).walk().forEach {directoryFile ->
@@ -248,13 +269,15 @@ class TaskListViewActivity : AppCompatActivity() {
                 doesFileExist = false
             }else{
                 dataModel!!.add(TaskListViewModel(listOfTasks[indexCounter],0))
+                indexCounter += 1
             }
         }
         adapter.notifyDataSetChanged()
     }
 
     fun deleteTaskClicked(view: View) {
-        Toast.makeText(applicationContext,"Select the task you want to delete",Toast.LENGTH_SHORT).show()
+
+        Toast.makeText(this,"Select the task you want to delete",Toast.LENGTH_SHORT).show()
         taskListView.onItemClickListener = AdapterView.OnItemClickListener { _,_, position, id ->
             deleteElementFile(id)
             deleteCheckListFile(id)
@@ -268,7 +291,7 @@ class TaskListViewActivity : AppCompatActivity() {
             createFile()
 
             adapter.notifyDataSetChanged()
-            Toast.makeText(applicationContext,"Deleted",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,"Deleted",Toast.LENGTH_SHORT).show()
             finish()
             startActivity(intent)
         }
