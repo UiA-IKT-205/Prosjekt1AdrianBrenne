@@ -2,10 +2,12 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
+import android.text.InputType
 import android.widget.*
 import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
@@ -39,6 +41,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var toolbar: Toolbar
 
+    private lateinit var task: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,8 +66,8 @@ class MainActivity : AppCompatActivity() {
         loadProgressBar()
 
         taskListView.onItemClickListener =
-                AdapterView.OnItemClickListener { _, _, position, id ->
-                    taskSelected(position,id)
+                AdapterView.OnItemClickListener { _, _, _, id ->
+                    taskSelected(id)
                 }
 
     }
@@ -72,23 +76,23 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == ADD_TASK_REQUEST) {
-
-            if (resultCode == Activity.RESULT_OK) {
-
-                val task = data?.getStringExtra(TaskDescriptionActivity.EXTRA_TASK_DESCRIPTION)
-                task?.let {
-                    saveTaskId()
-                    taskMap[task_id] = task
-                    taskList.add(task)
-                    dataModel!!.add(TaskViewModel(task,0))
-                    createFile()
-                    saveMap(task_id, task)
-                    adapter.notifyDataSetChanged()
-                }
-            }
-
-        }
+//        if (requestCode == ADD_TASK_REQUEST) {
+//
+//            if (resultCode == Activity.RESULT_OK) {
+//
+//                val task = data?.getStringExtra(TaskDescriptionActivity.EXTRA_TASK_DESCRIPTION)
+//                task?.let {
+////                    saveTaskId()
+////                    taskMap[task_id] = task
+////                    taskList.add(task)
+////                    dataModel!!.add(TaskViewModel(task,0))
+////                    createFile()
+////                    saveMap(task_id, task)
+////                    adapter.notifyDataSetChanged()
+//                }
+//            }
+//
+//        }
 
         if (requestCode == ADD_ELEMENT_REQUEST){
             if (resultCode == Activity.RESULT_OK){
@@ -107,16 +111,37 @@ class MainActivity : AppCompatActivity() {
 
 
     fun addTaskClicked(view: View) {
-        val intent = Intent(this, TaskDescriptionActivity::class.java)
-        startActivityForResult(intent, ADD_TASK_REQUEST)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder.setTitle("Add a task")
+
+        val input = EditText(this)
+
+        input.hint = "Taskname"
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            task = input.text.toString()
+            newTaskBackendControl(task)
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+
+        builder.show()
 
     }
 
+    private fun newTaskBackendControl(task:String){
+        saveTaskId()
+        taskMap[task_id] = task
+        taskList.add(task)
+        dataModel!!.add(TaskViewModel(task,0))
+        createFile()
+        saveMap(task_id, task)
+        adapter.notifyDataSetChanged()
+    }
 
-    private fun taskSelected(position: Int, id: Long) {
-
+    private fun taskSelected(id: Long) {
         viewElements(id)
-
     }
 
     private fun viewElements(id:Long){
