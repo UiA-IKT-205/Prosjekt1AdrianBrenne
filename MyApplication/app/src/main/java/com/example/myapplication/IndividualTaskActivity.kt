@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.provider.ContactsContract
+import android.text.InputType
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
@@ -46,6 +47,8 @@ class IndividualTaskActivity : AppCompatActivity() {
 
     private lateinit var toolbar: Toolbar
 
+    private lateinit var element: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_individual_task)
@@ -75,29 +78,54 @@ class IndividualTaskActivity : AppCompatActivity() {
     }
 
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == ADD_ELEMENT_REQUEST) {
-
-            if (resultCode == Activity.RESULT_OK) {
-
-                val task = data?.getStringExtra(EXTRA_TASK_DESCRIPTION)
-                task?.let {
-                    addElementList.add(task)
-                    elementList.add(task)
-                    elementsCheckedList.add("false")
-                    dataModel!!.add(DataModel(task,false))
-                    createCheckListFile()
-                    updateProgressBarAfterAdd()
-                    adapter.notifyDataSetChanged()
-                }
-            }
-        }
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        if (requestCode == ADD_ELEMENT_REQUEST) {
+//
+//            if (resultCode == Activity.RESULT_OK) {
+//
+//                val task = data?.getStringExtra(EXTRA_TASK_DESCRIPTION)
+//                task?.let {
+//                    addElementList.add(task)
+//                    elementList.add(task)
+//                    elementsCheckedList.add("false")
+//                    dataModel!!.add(DataModel(task,false))
+//                    createCheckListFile()
+//                    updateProgressBarAfterAdd()
+//                    adapter.notifyDataSetChanged()
+//                }
+//            }
+//        }
+//    }
 
     fun addElementClicked(view: View){
-        val intent = Intent(this, TaskDescriptionActivity::class.java)
-        startActivityForResult(intent, ADD_ELEMENT_REQUEST)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder.setTitle("Add an element")
+
+        val input = EditText(this)
+
+        input.hint = "Elementname"
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            element = input.text.toString()
+            newElementBackendControl(element)
+        }
+        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+
+        builder.show()
+
+    }
+
+    private fun newElementBackendControl(element:String){
+        addElementList.add(element)
+        elementList.add(element)
+        elementsCheckedList.add("false")
+        dataModel!!.add(DataModel(element,false))
+        createCheckListFile()
+        updateProgressBarAfterAdd()
+        adapter.notifyDataSetChanged()
     }
 
 
