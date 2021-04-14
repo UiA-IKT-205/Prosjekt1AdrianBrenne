@@ -12,7 +12,7 @@ import androidx.appcompat.widget.Toolbar
 import com.example.myapplication.adapters.ElementListViewAdapter
 import com.example.myapplication.data.ElementListViewModel
 import com.example.myapplication.services.FireBaseUploadService
-import kotlinx.android.synthetic.main.activity_element_list_view.*
+import kotlinx.android.synthetic.main.element_list_view.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
@@ -36,7 +36,7 @@ class ElementListViewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_element_list_view)
+        setContentView(R.layout.activity_element_list)
         val title = intent.extras?.getString("TASK_NAME")
 
         toolbar = findViewById(R.id.toolbar)

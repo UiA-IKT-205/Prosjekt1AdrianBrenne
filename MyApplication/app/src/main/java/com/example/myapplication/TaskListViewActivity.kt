@@ -17,6 +17,7 @@ import com.example.myapplication.services.FireBaseUploadService
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
+import java.security.cert.CertPath
 import kotlin.collections.ArrayList
 
 
@@ -39,7 +40,7 @@ class TaskListViewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_task_list_view)
+        setContentView(R.layout.activity_task_list)
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -76,7 +77,7 @@ class TaskListViewActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveTaskId(){
+     private fun saveTaskId(){
         uTaskId += 1
         getSharedPreferences("my_save", Activity.MODE_PRIVATE).edit().putInt("task_id", uTaskId).apply()
     }
@@ -107,7 +108,9 @@ class TaskListViewActivity : AppCompatActivity() {
         mapOfTaskAndId[uTaskId] = task
         listOfTasks.add(task)
         dataModel!!.add(TaskListViewModel(task,0))
-        createFile()
+
+        createFile(getPath())
+
         saveMap(uTaskId)
         adapter.notifyDataSetChanged()
     }
@@ -170,8 +173,7 @@ class TaskListViewActivity : AppCompatActivity() {
         doesFileExist = false
     }
 
-    private fun createFile(){
-        val path = this.getExternalFilesDir(null)
+     fun createFile(path:String){
         val fileName = "TaskList"
         val file = File(path,fileName)
 
@@ -181,6 +183,10 @@ class TaskListViewActivity : AppCompatActivity() {
             }
         }
         runFirebaseService(file)
+    }
+
+    private fun getPath(): String {
+        return this.getExternalFilesDir(null).toString()
     }
 
     private fun getTaskId(taskName:String): Int {
@@ -201,7 +207,7 @@ class TaskListViewActivity : AppCompatActivity() {
         doesFileExist = false
     }
 
-    private fun checkIfFileExists(directoryFile:String, newFilePath:String) {
+     fun checkIfFileExists(directoryFile:String, newFilePath:String) {
         if (directoryFile == newFilePath) {
             doesFileExist = true
         }
@@ -288,7 +294,7 @@ class TaskListViewActivity : AppCompatActivity() {
             dataModel!!.removeAt(position)
 
             saveNewListAfterDeletion(taskId)
-            createFile()
+            createFile(getPath())
 
             adapter.notifyDataSetChanged()
             Toast.makeText(this,"Deleted",Toast.LENGTH_SHORT).show()

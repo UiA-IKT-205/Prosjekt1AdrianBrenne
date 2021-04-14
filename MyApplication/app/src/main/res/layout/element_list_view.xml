@@ -12,12 +12,10 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
         android:max="100"
         android:minWidth="200dp"
         android:minHeight="50dp"
         android:progress="1"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -62,15 +60,14 @@
 
     <ListView
         android:id="@+id/elementListView"
-        android:layout_width="413dp"
-        android:layout_height="568dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pBarProgressText"
-        app:layout_constraintVertical_bias="1.0" />
+         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/doneButton"
@@ -86,6 +83,5 @@
         app:layout_constraintLeft_toRightOf="parent"
         app:layout_constraintRight_toLeftOf="parent" />
 
-    <include layout="@layout/toolbar_sheet" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -67,7 +67,7 @@ class FireBaseUploadService : Service() {
 
 
 
-    private fun fileUploadToElements(file: File){
+     fun fileUploadToElements(file: File){
         val ref = FirebaseStorage.getInstance().reference.child("Elements/${file.toUri().lastPathSegment}")
         val uploadTask = ref.putFile(file.toUri())
 
